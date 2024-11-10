@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { ArrowLeft, Plus, X } from 'lucide-react';
+import {TextareaAutosize} from "@mui/base";
 
 interface TextEditorProps {
   initialIngredients: string[];
@@ -26,7 +27,7 @@ export function TextEditor({
   const [newInstruction, setNewInstruction] = useState('');
 
   const editIngredient = (text: string, i: number) => {
-   setIngredients((prev) => prev.map(ingredient: string, index: number) => {})
+   setIngredients((prev) => prev.map((ingredient, index) => i === index ? text : ingredient));
   }
 
   const addIngredient = useCallback(() => {
@@ -36,6 +37,9 @@ export function TextEditor({
     }
   }, [newIngredient]);
 
+  const editInstruction = (text: string, i: number) => {
+    setInstructions((prev) => prev.map((instruction, index) => i === index ? text : instruction));
+  }
   const addInstruction = useCallback(() => {
     if (newInstruction.trim()) {
       setInstructions((prev) => [...prev, newInstruction.trim()]);
@@ -76,8 +80,8 @@ export function TextEditor({
                   <input
                     type="text"
                     value={ingredient}
-                    onChange={(e) => updateIngredient(e.target.value, index)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded"
+                    onChange={(e) => editIngredient(e.target.value, index)}
+                    className="p-2 w-full text-blue-600 hover:bg-blue-50 rounded"
                   />
                 </div>
                 <button
@@ -113,7 +117,11 @@ export function TextEditor({
             {instructions.map((instruction, index) => (
               <div key={index} className="flex items-start gap-2 group">
                 <div className="flex-1 p-2 bg-green-50 rounded text-sm">
-                  {instruction}
+                  <TextareaAutosize
+                      value={instruction}
+                      onChange={(e) => editInstruction(e.target.value, index)}
+                      className="p-2 w-full"
+                  />
                 </div>
                 <button
                   onClick={() => removeInstruction(index)}
@@ -124,9 +132,9 @@ export function TextEditor({
               </div>
             ))}
             <div className="flex gap-2">
-              <input
-                type="text"
+              <textarea
                 value={newInstruction}
+                rows={4}
                 onChange={(e) => setNewInstruction(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && addInstruction()}
                 placeholder="Add instruction..."

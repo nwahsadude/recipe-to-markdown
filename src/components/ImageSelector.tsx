@@ -1,5 +1,6 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { Trash2, UtensilsCrossed, ListOrdered } from 'lucide-react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {ListOrdered, Trash2, UtensilsCrossed} from 'lucide-react';
+import {Paragraph} from "tesseract.js";
 
 interface Box {
   id: string;
@@ -155,26 +156,14 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
     setBoxes(prev => prev.filter(box => box.id !== id));
   }, []);
 
-  const processText = useCallback((text: string, type: 'ingredient' | 'instruction'): string[] => {
-    // Split text by newlines and clean up each line
-    const lines = text
-      .split(/\n/)
-      .map(line => line.trim())
-      .filter(line => line.length > 0);
-
+  const processText = useCallback((text: Paragraph[], type: 'ingredient' | 'instruction'): string[] => {
     if (type === 'ingredient') {
-      // For ingredients, keep each line separate
-      return lines;
-    } else {
-      // For instructions, if it's a single line, try to split by periods
-      if (lines.length === 1) {
-        return lines[0]
-          .split('.')
+      return text.flatMap(p => p.text
+          .split(/\n/)
           .map(line => line.trim())
-          .filter(line => line.length > 0)
-          .map(line => line + '.');
-      }
-      return lines;
+          .filter(line => line.length > 0));
+    } else {
+      return text.map(p => p.text);
     }
   }, []);
 
@@ -201,9 +190,9 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
           const blob = await new Promise<Blob>((resolve) => 
             canvas.toBlob(blob => resolve(blob!))
           );
-          
-          const { data: { text } } = await worker.recognize(blob);
-          return { ...box, text: processText(text, box.type) };
+
+          const { data}  = await worker.recognize(blob);
+          return { ...box, text: processText(data.paragraphs, box.type) };
         })
       );
 
