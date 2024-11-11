@@ -77,19 +77,22 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
     return () => window.removeEventListener('resize', handleResize);
   }, [image]);
 
-  const getCoordinates = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return null;
+  const getCoordinates = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return null;
 
-    const rect = canvas.getBoundingClientRect();
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+      const rect = canvas.getBoundingClientRect();
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
-    return {
-      x: clientX - rect.left,
-      y: clientY - rect.top,
-    };
-  }, []);
+      return {
+        x: (clientX - rect.left) / scale,
+        y: (clientY - rect.top) / scale,
+      };
+    },
+    [scale],
+  );
 
   const startDrawing = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
@@ -172,16 +175,16 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
       const tempCtx = tempCanvas.getContext('2d')!;
       tempCanvas.width = width;
       tempCanvas.height = height;
-      tempCtx.drawImage(image, x! / scale, y! / scale, width / scale, height / scale, 0, 0, width, height);
+      tempCtx.drawImage(image, x!, y!, width, height, 0, 0, width, height);
 
       const imageUrl = tempCanvas.toDataURL('image/png');
 
       const newBox: Box = {
         id: Date.now().toString(),
-        x: x! / scale,
-        y: y! / scale,
-        width: width / scale,
-        height: height / scale,
+        x: x!,
+        y: y!,
+        width: width,
+        height: height,
         type: selectedType,
         text: [],
         imageUrl,
@@ -193,7 +196,7 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
       setDrawing(false);
       setCurrentBox(null);
     }
-  }, [currentBox, selectedType, scale, image]);
+  }, [currentBox, selectedType, image]);
 
   // const removeBox = useCallback((id: string) => {
   //   setBoxes((prev) => prev.filter((box) => box.id !== id));
