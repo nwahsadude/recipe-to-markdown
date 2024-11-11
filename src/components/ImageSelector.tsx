@@ -271,7 +271,6 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
           </div>
           <div className="text-xs md:text-sm text-gray-500">Draw boxes around text to categorize them</div>
         </div>
-        <div className="text-sm text-gray-500">Draw boxes around text to categorize them</div>
       </div>
 
       <div className="relative" ref={containerRef}>

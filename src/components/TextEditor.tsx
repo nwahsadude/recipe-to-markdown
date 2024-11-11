@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ArrowLeft, Plus, X, Image as ImageIcon } from 'lucide-react';
 import { TextareaAutosize } from '@mui/base';
 
@@ -19,6 +19,7 @@ interface TextEditorProps {
   boxes: Box[];
   onOrganized: (title: string, ingredients: string[], instructions: string[]) => void;
   onBack: () => void;
+  onTextUpdated: (title: string, ingredients: string[], instructions: string[]) => void;
 }
 
 interface ImagePreviewProps {
@@ -44,7 +45,14 @@ function ImagePreview({ imageUrl, type, index }: ImagePreviewProps) {
   );
 }
 
-export function TextEditor({ initialIngredients, initialInstructions, boxes, onOrganized, onBack }: TextEditorProps) {
+export function TextEditor({
+  initialIngredients,
+  initialInstructions,
+  boxes,
+  onOrganized,
+  onBack,
+  onTextUpdated,
+}: TextEditorProps) {
   const [title, setTitle] = useState('Recipe Title');
   const [ingredients, setIngredients] = useState<string[]>(initialIngredients);
   const [instructions, setInstructions] = useState<string[]>(initialInstructions);
@@ -60,6 +68,10 @@ export function TextEditor({ initialIngredients, initialInstructions, boxes, onO
   const editIngredient = (text: string, i: number) => {
     setIngredients((prev) => prev.map((ingredient, index) => (i === index ? text : ingredient)));
   };
+
+  useEffect(() => {
+    onTextUpdated(title, ingredients, instructions);
+  }, [title, ingredients, instructions, onTextUpdated]);
 
   const addIngredient = useCallback(() => {
     if (newIngredient.trim()) {
@@ -121,7 +133,7 @@ export function TextEditor({ initialIngredients, initialInstructions, boxes, onO
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 p-4 md:p-6">
         <div className="space-y-4">
-          <div>
+          <div className="gap-2 flex">
             <h3 className="font-semibold text-gray-700">Ingredients</h3>
             <button
               onClick={() => togglePreview('ingredient', 0)}
@@ -173,7 +185,7 @@ export function TextEditor({ initialIngredients, initialInstructions, boxes, onO
         </div>
 
         <div className="space-y-4">
-          <div>
+          <div className="flex gap-2">
             <h3 className="font-semibold text-gray-700">Instructions</h3>
             <button
               onClick={() => togglePreview('instruction', 0)}

@@ -33,6 +33,12 @@ function App() {
     setStep('select');
   }, []);
 
+  const handleTextUpdated = useCallback((_title: string, ingredients: string[], instructions: string[]) => {
+    setExtractedText((prevState) => {
+      return { ...prevState, ingredients: ingredients, instructions: instructions };
+    });
+  }, []);
+
   const handleTextExtracted = useCallback((ingredients: string[], instructions: string[], boxes: Box[]) => {
     setExtractedText({ ingredients, instructions, boxes });
     setStep('edit');
@@ -100,6 +106,7 @@ ${instructions.map((inst, i) => `${i + 1}. ${inst.trim()}`).join('\n')}
             {['upload', 'select', 'edit', 'preview'].map((s, index) => (
               <React.Fragment key={s}>
                 <div
+                  onClick={() => setStep(s as Step)}
                   className={`flex items-center whitespace-nowrap ${step === s ? 'text-blue-600' : 'text-gray-500'}`}
                 >
                   <span
@@ -129,6 +136,7 @@ ${instructions.map((inst, i) => `${i + 1}. ${inst.trim()}`).join('\n')}
               boxes={extractedText.boxes}
               onOrganized={handleTextOrganized}
               onBack={handleBack}
+              onTextUpdated={handleTextUpdated}
             />
           )}
 
