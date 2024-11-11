@@ -199,23 +199,20 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
     setBoxes((prev) => prev.filter((box) => box.id !== id));
   }, []);
 
-  const processText = useCallback((text: string, type: 'ingredient' | 'instruction'): string[] => {
-    const lines = text
-      .split(/\n/)
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0);
-
+  const processText = useCallback((text: Paragraph[], type: 'ingredient' | 'instruction'): string[] => {
     if (type === 'ingredient') {
-      return lines;
-    } else {
-      if (lines.length === 1) {
-        return lines[0]
-          .split('.')
+      return text.flatMap((p) =>
+        p.text
+          .split(/\n/)
           .map((line) => line.trim())
-          .filter((line) => line.length > 0)
-          .map((line) => line + '.');
-      }
-      return lines;
+          .filter((line) => line.length > 0),
+      );
+    } else {
+      return text
+        .map((p) => p.text)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .map((line) => line + '.');
     }
   }, []);
 
@@ -227,9 +224,9 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
       const processedBoxes = await Promise.all(
         boxes.map(async (box) => {
           const {
-            data: { text },
+            data: { paragraphs },
           } = await worker.recognize(box.imageUrl!);
-          return { ...box, text: processText(text, box.type) };
+          return { ...box, text: processText(paragraphs, box.type) };
         }),
       );
 
