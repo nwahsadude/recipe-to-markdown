@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { ArrowLeft, Plus, X, Image as ImageIcon } from 'lucide-react';
 import { TextareaAutosize } from '@mui/base';
 
@@ -161,7 +161,7 @@ export function TextEditor({ initialIngredients, initialInstructions, boxes, onO
                 type="text"
                 value={newIngredient}
                 onChange={(e) => setNewIngredient(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addIngredient()}
+                onKeyUp={(e) => e.key === 'Enter' && addIngredient()}
                 placeholder="Add ingredient..."
                 className="flex-1 p-2 border rounded text-sm focus:ring-2 focus:ring-blue-500"
               />
@@ -212,7 +212,7 @@ export function TextEditor({ initialIngredients, initialInstructions, boxes, onO
                 value={newInstruction}
                 rows={4}
                 onChange={(e) => setNewInstruction(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addInstruction()}
+                onKeyUp={(e) => e.key === 'Enter' && addInstruction()}
                 placeholder="Add instruction..."
                 className="flex-1 p-2 border rounded text-sm focus:ring-2 focus:ring-blue-500"
               />

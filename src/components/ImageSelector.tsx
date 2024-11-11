@@ -195,9 +195,9 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
     }
   }, [currentBox, selectedType, scale, image]);
 
-  const removeBox = useCallback((id: string) => {
-    setBoxes((prev) => prev.filter((box) => box.id !== id));
-  }, []);
+  // const removeBox = useCallback((id: string) => {
+  //   setBoxes((prev) => prev.filter((box) => box.id !== id));
+  // }, []);
 
   const processText = useCallback((text: Paragraph[], type: 'ingredient' | 'instruction'): string[] => {
     if (type === 'ingredient') {
