@@ -23,12 +23,14 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [image, setImage] = useState<HTMLImageElement | null>(null);
+  const [origImage, setOrigImage] = useState<HTMLImageElement | null>(null);
   const [boxes, setBoxes] = useState<Box[]>([]);
   const [drawing, setDrawing] = useState(false);
   const [currentBox, setCurrentBox] = useState<Partial<Box> | null>(null);
   const [selectedType, setSelectedType] = useState<'ingredient' | 'instruction'>('ingredient');
   const [isProcessing, setIsProcessing] = useState(false);
   const [scale, setScale] = useState(1);
+  const [threshold, setThreshold] = useState(128);
 
   // Load and draw the image
   useEffect(() => {
@@ -36,10 +38,11 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
     img.src = URL.createObjectURL(imageFile);
     img.onload = () => {
       setImage(img);
+      setOrigImage(img);
       if (canvasRef.current && containerRef.current) {
         const canvas = canvasRef.current;
         const container = containerRef.current;
-        const ctx = canvas.getContext('2d')!;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
 
         // Calculate scale based on container width
         const containerWidth = container.clientWidth;
@@ -61,7 +64,7 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
       if (image && canvasRef.current && containerRef.current) {
         const canvas = canvasRef.current;
         const container = containerRef.current;
-        const ctx = canvas.getContext('2d')!;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
 
         const newScale = Math.min(1, container.clientWidth / image.width);
         setScale(newScale);
@@ -76,6 +79,50 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [image]);
+
+  const applyThresholding = useCallback(
+    (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
+      // Get image data for processing
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+
+      // Apply thresholding
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        // Convert to grayscale
+        const grayscale = 0.3 * r + 0.59 * g + 0.11 * b;
+
+        // Apply threshold
+        const binaryColor = grayscale >= threshold ? 255 : 0;
+
+        // Set each color channel to the binary color (black or white)
+        data[i] = data[i + 1] = data[i + 2] = binaryColor;
+      }
+
+      // Put modified image data back to canvas
+      ctx.putImageData(imageData, 0, 0);
+    },
+    [threshold],
+  );
+
+  // apply threshold when threshold slider changed
+  useEffect(() => {
+    if (image && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+      applyThresholding(ctx, canvas);
+    }
+  }, [applyThresholding, image, threshold]);
+
+  const handleThresholdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setImage(origImage);
+    setThreshold(parseInt(e.target.value));
+  };
 
   const getCoordinates = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
@@ -128,11 +175,12 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
     if (!canvasRef.current || !image) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d')!;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
 
     // Clear and redraw image
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    applyThresholding(ctx, canvas);
 
     boxes.forEach((box) => {
       ctx.strokeStyle = box.type === 'ingredient' ? '#3B82F6' : '#10B981';
@@ -148,7 +196,7 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
       ctx.lineWidth = 2;
       ctx.strokeRect(currentBox.x! * scale, currentBox.y! * scale, currentBox.width * scale, currentBox.height * scale);
     }
-  }, [boxes, currentBox, image, selectedType, scale]);
+  }, [boxes, currentBox, image, selectedType, scale, applyThresholding]);
 
   const stopDrawing = useCallback(async () => {
     if (!currentBox || !currentBox.width || !currentBox.height || !image) {
@@ -172,7 +220,7 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
     try {
       // Create a temporary canvas for the cropped region
       const tempCanvas = document.createElement('canvas');
-      const tempCtx = tempCanvas.getContext('2d')!;
+      const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true })!;
       tempCanvas.width = width;
       tempCanvas.height = height;
       tempCtx.drawImage(image, x!, y!, width, height, 0, 0, width, height);
@@ -270,6 +318,12 @@ export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorPr
             </button>
           </div>
           <div className="text-xs md:text-sm text-gray-500">Draw boxes around text to categorize them</div>
+          <div>
+            <label>
+              Threshold: {threshold}
+              <input type="range" min="0" max="255" value={threshold} onChange={handleThresholdChange} />
+            </label>
+          </div>
         </div>
       </div>
 
