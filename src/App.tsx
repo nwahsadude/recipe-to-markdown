@@ -49,7 +49,7 @@ function App() {
 
 ## Ingredients
 
-${ingredients.map((ing) => `- ${ing.trim()}`).join('\n')}
+${ingredients.map((ing) => `${ing.substring(0, 4) === '####' ? '' : '-'} ${ing.trim()}`).join('\n')}
 
 ## Instructions
 

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { ArrowLeft, Plus, X, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Plus, X, Image as ImageIcon, PanelTop } from 'lucide-react';
 import { TextareaAutosize } from '@mui/base';
 
 interface Box {
@@ -152,6 +152,14 @@ export function TextEditor({
           <div className="space-y-2">
             {ingredients.map((ingredient, index) => (
               <div key={index} className="flex items-start gap-2 group">
+                <button
+                  onClick={() => editIngredient(`#### ${ingredient}`, index)}
+                  className="p-1 text-red-600 hover:bg-red-50 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                  title={'Make item a header'}
+                  tabIndex={-1}
+                >
+                  <PanelTop className="w-4 h-4" />
+                </button>
                 <div className="flex-1 p-2 bg-blue-50 rounded text-sm">
                   <input
                     type="text"
@@ -163,6 +171,7 @@ export function TextEditor({
                 <button
                   onClick={() => removeIngredient(index)}
                   className="p-1 text-red-600 hover:bg-red-50 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                  tabIndex={-1}
                 >
                   <X className="w-4 h-4" />
                 </button>
