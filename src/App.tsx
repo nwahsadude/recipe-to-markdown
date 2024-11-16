@@ -1,11 +1,12 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { ChefHat } from 'lucide-react';
 import { ImageUploader } from './components/ImageUploader';
 import { ImageSelector } from './components/ImageSelector';
 import { TextEditor } from './components/TextEditor';
 import { MarkdownPreview } from './components/MarkdownPreview';
+import { AdditionalDetails } from './components/AdditionalDetails.tsx';
 
-type Step = 'upload' | 'select' | 'edit' | 'preview';
+type Step = 'upload' | 'select' | 'edit' | 'details' | 'preview';
 
 interface Box {
   id: string;
@@ -21,11 +22,15 @@ interface Box {
 function App() {
   const [step, setStep] = useState<Step>('upload');
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [extractedText, setExtractedText] = useState<{
+  const [recipeState, setRecipeState] = useState<{
     ingredients: string[];
     instructions: string[];
-    boxes: Box[];
-  }>({ ingredients: [], instructions: [], boxes: [] });
+    title: string;
+    prepTime: string;
+    cookTime: string;
+    servings: string;
+  }>({ cookTime: '', prepTime: '', servings: '', ingredients: [], instructions: [], title: 'Recipe Title' });
+  const [boxes, setBoxes] = useState<Box[]>([]);
   const [markdown, setMarkdown] = useState('');
 
   const handleImageSelect = useCallback((file: File) => {
@@ -33,18 +38,34 @@ function App() {
     setStep('select');
   }, []);
 
-  const handleTextUpdated = useCallback((_title: string, ingredients: string[], instructions: string[]) => {
-    setExtractedText((prevState) => {
-      return { ...prevState, ingredients: ingredients, instructions: instructions };
+  const handleTextUpdated = useCallback((title: string, ingredients: string[], instructions: string[]) => {
+    setRecipeState((prevState) => {
+      return { ...prevState, ingredients: ingredients, instructions: instructions, title: title };
+    });
+  }, []);
+
+  const handleAdditionalDetails = useCallback((cookTime: string, prepTime: string, servings: string) => {
+    setRecipeState((prevState) => {
+      return { ...prevState, cookTime: cookTime, prepTime: prepTime, servings: servings };
     });
   }, []);
 
   const handleTextExtracted = useCallback((ingredients: string[], instructions: string[], boxes: Box[]) => {
-    setExtractedText({ ingredients, instructions, boxes });
+    setRecipeState((prevState) => {
+      return { ...prevState, ingredients: ingredients, instructions: instructions };
+    });
+    setBoxes(boxes);
     setStep('edit');
   }, []);
 
-  const handleTextOrganized = useCallback((title: string, ingredients: string[], instructions: string[]) => {
+  useEffect(() => {
+    console.log(recipeState);
+  }, [recipeState]);
+
+  const handleGenerateRecipe = useCallback(() => {
+    const { title, ingredients, instructions, prepTime, cookTime, servings } = recipeState;
+
+    console.log(recipeState, title, prepTime);
     const formattedMarkdown = `# ${title}
 
 ## Ingredients
@@ -57,20 +78,21 @@ ${instructions.map((inst, i) => `${i + 1}. ${inst.trim()}`).join('\n')}
 
 ## Notes
 
-- Prep Time: 
-- Cook Time: 
-- Servings: 
-- Source: OCR Extracted Recipe
+- Prep Time: ${prepTime}
+- Cook Time: ${cookTime}
+- Servings: ${servings}
 `;
 
     setMarkdown(formattedMarkdown);
     setStep('preview');
-  }, []);
+  }, [recipeState]);
 
   const handleBack = useCallback(() => {
     setStep((prev) => {
       switch (prev) {
         case 'preview':
+          return 'details';
+        case 'details':
           return 'edit';
         case 'edit':
           return 'select';
@@ -86,6 +108,10 @@ ${instructions.map((inst, i) => `${i + 1}. ${inst.trim()}`).join('\n')}
     navigator.clipboard.writeText(markdown);
     alert('Markdown copied to clipboard!');
   }, [markdown]);
+
+  const handleAddDetails = useCallback(() => {
+    setStep('details');
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
@@ -103,7 +129,7 @@ ${instructions.map((inst, i) => `${i + 1}. ${inst.trim()}`).join('\n')}
           </div>
 
           <div className="flex items-center justify-center gap-2 md:gap-4 text-xs md:text-sm font-medium overflow-x-auto w-full max-w-full px-4">
-            {['upload', 'select', 'edit', 'preview'].map((s, index) => (
+            {['upload', 'select', 'edit', 'details', 'preview'].map((s, index) => (
               <React.Fragment key={s}>
                 <div
                   onClick={() => setStep(s as Step)}
@@ -118,7 +144,7 @@ ${instructions.map((inst, i) => `${i + 1}. ${inst.trim()}`).join('\n')}
                   </span>
                   <span className="ml-2 capitalize">{s}</span>
                 </div>
-                {index < 3 && <div className="w-8 md:w-12 h-px bg-gray-300" />}
+                {index < 4 && <div className="w-8 md:w-12 h-px bg-gray-300" />}
               </React.Fragment>
             ))}
           </div>
@@ -131,12 +157,24 @@ ${instructions.map((inst, i) => `${i + 1}. ${inst.trim()}`).join('\n')}
 
           {step === 'edit' && (
             <TextEditor
-              initialIngredients={extractedText.ingredients}
-              initialInstructions={extractedText.instructions}
-              boxes={extractedText.boxes}
-              onOrganized={handleTextOrganized}
+              ingredientState={recipeState.ingredients}
+              instructionState={recipeState.instructions}
+              titleState={recipeState.title}
+              boxes={boxes}
+              onAddDetails={handleAddDetails}
               onBack={handleBack}
               onTextUpdated={handleTextUpdated}
+            />
+          )}
+
+          {step === 'details' && (
+            <AdditionalDetails
+              cookTimeState={recipeState.cookTime}
+              prepTimeState={recipeState.prepTime}
+              servingsState={recipeState.servings}
+              onUpdated={handleAdditionalDetails}
+              onBack={handleBack}
+              onHandleGenerateRecipe={handleGenerateRecipe}
             />
           )}
 

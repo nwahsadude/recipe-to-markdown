@@ -14,11 +14,12 @@ interface Box {
 }
 
 interface TextEditorProps {
-  initialIngredients: string[];
-  initialInstructions: string[];
+  ingredientState: string[];
+  instructionState: string[];
+  titleState: string;
   boxes: Box[];
-  onOrganized: (title: string, ingredients: string[], instructions: string[]) => void;
   onBack: () => void;
+  onAddDetails: () => void;
   onTextUpdated: (title: string, ingredients: string[], instructions: string[]) => void;
 }
 
@@ -46,16 +47,17 @@ function ImagePreview({ imageUrl, type, index }: ImagePreviewProps) {
 }
 
 export function TextEditor({
-  initialIngredients,
-  initialInstructions,
+  ingredientState,
+  instructionState,
+  titleState,
   boxes,
-  onOrganized,
+  onAddDetails,
   onBack,
   onTextUpdated,
 }: TextEditorProps) {
-  const [title, setTitle] = useState('Recipe Title');
-  const [ingredients, setIngredients] = useState<string[]>(initialIngredients);
-  const [instructions, setInstructions] = useState<string[]>(initialInstructions);
+  const [title, setTitle] = useState(titleState);
+  const [ingredients, setIngredients] = useState<string[]>(ingredientState);
+  const [instructions, setInstructions] = useState<string[]>(instructionState);
   const [newIngredient, setNewIngredient] = useState('');
   const [newInstruction, setNewInstruction] = useState('');
   const [selectedPreview, setSelectedPreview] = useState<{ type: 'ingredient' | 'instruction'; index: number } | null>(
@@ -97,10 +99,6 @@ export function TextEditor({
   const removeInstruction = useCallback((index: number) => {
     setInstructions((prev) => prev.filter((_, i) => i !== index));
   }, []);
-
-  const handleComplete = useCallback(() => {
-    onOrganized(title, ingredients, instructions);
-  }, [title, ingredients, instructions, onOrganized]);
 
   const togglePreview = useCallback((type: 'ingredient' | 'instruction', index: number) => {
     setSelectedPreview((prev) => (prev?.type === type && prev.index === index ? null : { type, index }));
@@ -254,11 +252,11 @@ export function TextEditor({
           Back
         </button>
         <button
-          onClick={handleComplete}
+          onClick={onAddDetails}
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm md:text-base"
           disabled={ingredients.length === 0 && instructions.length === 0}
         >
-          Generate Recipe
+          Add Additional Details
         </button>
       </div>
     </div>
