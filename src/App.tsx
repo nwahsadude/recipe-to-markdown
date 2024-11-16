@@ -101,7 +101,11 @@ ${instructions.map((inst, i) => `${i + 1}. ${inst.trim()}`).join('\n')}
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(markdown);
-    alert('Markdown copied to clipboard!');
+  }, [markdown]);
+
+  const handleCopyAndOpen = useCallback(() => {
+    navigator.clipboard.writeText(markdown);
+    window.open('https://docs.google.com/create', '_blank', 'noopener,noreferrer');
   }, [markdown]);
 
   const handleAddDetails = useCallback(() => {
@@ -180,7 +184,7 @@ ${instructions.map((inst, i) => `${i + 1}. ${inst.trim()}`).join('\n')}
 
           {step === 'preview' && (
             <div className="w-full flex flex-col items-center space-y-4">
-              <MarkdownPreview markdown={markdown} onCopy={handleCopy} />
+              <MarkdownPreview markdown={markdown} onCopy={handleCopy} onCopyAndOpen={handleCopyAndOpen} />
               <button
                 onClick={handleBack}
                 className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
