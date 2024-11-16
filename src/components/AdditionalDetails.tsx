@@ -82,22 +82,21 @@ export function AdditionalDetails({
             </div>
           </div>
         </form>
-
-        <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center p-4 border-t bg-gray-50 space-y-3 md:space-y-0">
-          <button
-            onClick={onBack}
-            className="flex items-center justify-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
-          <button
-            onClick={onHandleGenerateRecipe}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm md:text-base"
-          >
-            Generate Recipe
-          </button>
-        </div>
+      </div>
+      <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center p-4 border-t bg-gray-50 space-y-3 md:space-y-0">
+        <button
+          onClick={onBack}
+          className="flex items-center justify-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </button>
+        <button
+          onClick={onHandleGenerateRecipe}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm md:text-base"
+        >
+          Generate Recipe
+        </button>
       </div>
     </div>
   );
