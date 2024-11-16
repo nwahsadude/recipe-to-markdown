@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ListOrdered, Trash2, UtensilsCrossed } from 'lucide-react';
+import { ListOrdered, Trash2, Undo, UtensilsCrossed } from 'lucide-react';
 import { Paragraph } from 'tesseract.js';
 
 interface Box {
@@ -294,6 +294,10 @@ export function ImageSelector({ imageFile, boxesState, onComplete, onBack }: Ima
     }
   }, [boxes, onComplete, processText]);
 
+  const handleUndo = useCallback(() => {
+    setBoxes((prevState) => prevState.slice(0, -1));
+  }, []);
+
   return (
     <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="p-3 md:p-4 border-b">
@@ -352,6 +356,14 @@ export function ImageSelector({ imageFile, boxesState, onComplete, onBack }: Ima
           ← Back
         </button>
         <div className="flex gap-2 md:gap-4">
+          <button
+            onClick={handleUndo}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm"
+            disabled={boxes.length === 0}
+          >
+            <Undo className="w-4 h-4" />
+            <span className="hidden md:inline">Undo</span>
+          </button>
           <button
             onClick={() => setBoxes([])}
             className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm"
