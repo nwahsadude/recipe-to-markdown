@@ -15,16 +15,17 @@ interface Box {
 
 interface ImageSelectorProps {
   imageFile: File;
+  boxesState: Box[];
   onComplete: (ingredients: string[], instructions: string[], boxes: Box[]) => void;
   onBack: () => void;
 }
 
-export function ImageSelector({ imageFile, onComplete, onBack }: ImageSelectorProps) {
+export function ImageSelector({ imageFile, boxesState, onComplete, onBack }: ImageSelectorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [origImage, setOrigImage] = useState<HTMLImageElement | null>(null);
-  const [boxes, setBoxes] = useState<Box[]>([]);
+  const [boxes, setBoxes] = useState<Box[]>(boxesState);
   const [drawing, setDrawing] = useState(false);
   const [currentBox, setCurrentBox] = useState<Partial<Box> | null>(null);
   const [selectedType, setSelectedType] = useState<'ingredient' | 'instruction'>('ingredient');

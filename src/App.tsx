@@ -30,7 +30,7 @@ function App() {
     cookTime: string;
     servings: string;
   }>({ cookTime: '', prepTime: '', servings: '', ingredients: [], instructions: [], title: 'Recipe Title' });
-  const [boxes, setBoxes] = useState<Box[]>([]);
+  const [boxesState, setBoxesState] = useState<Box[]>([]);
   const [markdown, setMarkdown] = useState('');
 
   const handleImageSelect = useCallback((file: File) => {
@@ -54,7 +54,7 @@ function App() {
     setRecipeState((prevState) => {
       return { ...prevState, ingredients: ingredients, instructions: instructions };
     });
-    setBoxes(boxes);
+    setBoxesState(boxes);
     setStep('edit');
   }, []);
 
@@ -152,7 +152,12 @@ ${instructions.map((inst, i) => `${i + 1}. ${inst.trim()}`).join('\n')}
           {step === 'upload' && <ImageUploader onImageSelect={handleImageSelect} />}
 
           {step === 'select' && imageFile && (
-            <ImageSelector imageFile={imageFile} onComplete={handleTextExtracted} onBack={handleBack} />
+            <ImageSelector
+              imageFile={imageFile}
+              boxesState={boxesState}
+              onComplete={handleTextExtracted}
+              onBack={handleBack}
+            />
           )}
 
           {step === 'edit' && (
@@ -160,7 +165,7 @@ ${instructions.map((inst, i) => `${i + 1}. ${inst.trim()}`).join('\n')}
               ingredientState={recipeState.ingredients}
               instructionState={recipeState.instructions}
               titleState={recipeState.title}
-              boxes={boxes}
+              boxes={boxesState}
               onAddDetails={handleAddDetails}
               onBack={handleBack}
               onTextUpdated={handleTextUpdated}
