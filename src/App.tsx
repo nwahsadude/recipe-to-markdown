@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 import { ChefHat } from 'lucide-react';
 import { ImageUploader } from './components/ImageUploader';
 import { ImageSelector } from './components/ImageSelector';
@@ -58,14 +58,9 @@ function App() {
     setStep('edit');
   }, []);
 
-  useEffect(() => {
-    console.log(recipeState);
-  }, [recipeState]);
-
   const handleGenerateRecipe = useCallback(() => {
     const { title, ingredients, instructions, prepTime, cookTime, servings } = recipeState;
 
-    console.log(recipeState, title, prepTime);
     const formattedMarkdown = `# ${title}
 
 ## Ingredients
